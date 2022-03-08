@@ -23,7 +23,7 @@ class ControlsPane  : public juce::Component
 {
 
 public:
-    ControlsPane(const juce::ValueTree& controlsTree, juce::UndoManager& undoManager);
+    ControlsPane(const juce::ValueTree& controlsTree, juce::UndoManager& undoManager, juce::OSCReceiver& or);
     ~ControlsPane() override;
 
     void paint (juce::Graphics&) override;

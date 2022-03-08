@@ -86,9 +86,9 @@ struct Control : public juce::Component,
 
 
 juce::ValueTree state;
+juce::UndoManager& undoManager;
 
 private: 
-    juce::UndoManager& undoManager;
     juce::Label controlNameLabel;
     juce::TextButton deleteButton;
 };
@@ -119,18 +119,24 @@ private:
 };
 
 struct OSCControl : public Control, 
-                    private juce::OSCReceiver::ListenerWithOSCAddress<juce::OSCReceiver::MessageLoopCallback>                
+                    private juce::OSCReceiver::ListenerWithOSCAddress<juce::OSCReceiver::MessageLoopCallback>,
+                    private juce::Value::Listener
 {
    
-    OSCControl(const juce::ValueTree& v, juce::UndoManager& um) : Control(v, um)
+    OSCControl(const juce::ValueTree& v, juce::UndoManager& um, juce::OSCReceiver& or) : Control(v, um), oscReceiver(or)
     {
-        oscAddressLabel.setText("<received-value>", juce::dontSendNotification);
+        oscAddress.referTo(state.getPropertyAsValue(IDs::OSC_ADDRESS, &undoManager));
+        oscAddress.addListener(this);
+
+        oscReceiver.addListener(this, oscAddress.getValue().toString());
+
+        oscAddressLabel.setText("OSC address:", juce::dontSendNotification);
         oscAddressLabel.setJustificationType(juce::Justification::centred);
 
-        oscAddressInput.onTextChange = [this] { state.setProperty(IDs::OSC_ADDRESS, oscAddressInput.getText(), nullptr); };
+        oscAddressInput.onTextChange = [this] { oscAddress.setValue(oscAddressInput.getText()); };
         oscAddressInput.setEditable(true);
         oscAddressInput.setJustificationType(juce::Justification::centred);
-        oscAddressInput.setText(v.getProperty(IDs::OSC_ADDRESS).toString(), juce::dontSendNotification);
+        oscAddressInput.setText(oscAddress.getValue(), juce::dontSendNotification);
 
         addAndMakeVisible(oscAddressInput);
         addAndMakeVisible(oscAddressLabel);
@@ -138,9 +144,16 @@ struct OSCControl : public Control,
     }
     void oscMessageReceived(const juce::OSCMessage& message) 
     {
-
-
+        oscAddressLabel.setText(message[0].getString(), juce::dontSendNotification);
     }
+
+    void valueChanged(juce::Value& value)
+    {
+        oscReceiver.removeListener(this);
+        oscReceiver.addListener(this, value.getValue().toString());
+    }
+
+
 
     void resized() override 
     {
@@ -152,15 +165,18 @@ struct OSCControl : public Control,
 
 
 private: 
+    juce::Value oscAddress;
     juce::Label oscAddressInput;
     juce::Label oscAddressLabel;
+    juce::OSCReceiver& oscReceiver ;
 };
 
 class ControlList : public juce::Component,
                     public ValueTreeObjectList<Control>
 {
 public:
-    ControlList(const juce::ValueTree& controlsTree, juce::UndoManager& um) : ValueTreeObjectList<Control>(controlsTree), undoManager(um)
+    ControlList(const juce::ValueTree& controlsTree, juce::UndoManager& um, juce::OSCReceiver& or) : ValueTreeObjectList<Control>(controlsTree), undoManager(um), oscReceiver(or)
+
     {
         rebuildObjects();
     };
@@ -213,7 +229,7 @@ public:
             return control;
         }
         else {
-            auto* control = new OSCControl(valueTree, undoManager);
+            auto* control = new OSCControl(valueTree, undoManager, oscReceiver);
             addAndMakeVisible(control);
             return control;
         }
@@ -238,5 +254,6 @@ public:
     };
 private:
     juce::UndoManager& undoManager;
+    juce::OSCReceiver& oscReceiver;
 
 };

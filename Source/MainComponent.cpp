@@ -15,7 +15,7 @@ MainComponent::MainComponent() : app(juce::ValueTree(IDs::APP)),
     app.appendChild(OSCState, nullptr);
     app.appendChild(juce::ValueTree(IDs::CONTROLS), nullptr);
 
-    controlsPane = std::make_unique<ControlsPane>(app.getChildWithName(IDs::CONTROLS), undoManager);
+    controlsPane = std::make_unique<ControlsPane>(app.getChildWithName(IDs::CONTROLS), undoManager, oscReceiver);
     topPane = std::make_unique<TopPane>(app.getChildWithName(IDs::OSC_RECEIVER), undoManager, oscReceiver);
     addAndMakeVisible(visualParametersPane);
     addAndMakeVisible(*topPane);

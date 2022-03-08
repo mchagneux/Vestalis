@@ -12,15 +12,18 @@
 #include "ControlsPane.h"
 
 //==============================================================================
-ControlsPane::ControlsPane(const juce::ValueTree& controlsTree, juce::UndoManager& um) : state(controlsTree), undoManager(um)
+ControlsPane::ControlsPane(const juce::ValueTree& controlsTree, juce::UndoManager& um, juce::OSCReceiver& or) : state(controlsTree), undoManager(um)
 {
-    addAndMakeVisible(*(controlList = std::make_unique<ControlList>(state, undoManager)));
+    addAndMakeVisible(*(controlList = std::make_unique<ControlList>(state, undoManager, or)));
 
     addOSCControlButton.setButtonText("Add OSC control");
     addOSCControlButton.onClick = [this] 
     { 
         undoManager.beginNewTransaction("Add OSC control");
-        state.appendChild(juce::ValueTree(IDs::OSC_CONTROL), &undoManager);
+        juce::ValueTree newOSCControl(IDs::OSC_CONTROL);
+        newOSCControl.setProperty(IDs::OSC_ADDRESS, "/juce/address", nullptr);
+        newOSCControl.setProperty(IDs::CONTROL_NAME, "<control-name>", nullptr);
+        state.appendChild(newOSCControl, &undoManager);
     };
 
     addManualControlButton.setButtonText("Add manual control");
@@ -28,7 +31,9 @@ ControlsPane::ControlsPane(const juce::ValueTree& controlsTree, juce::UndoManage
     {
 
         undoManager.beginNewTransaction("Add manual control");
-        state.appendChild(juce::ValueTree(IDs::MANUAL_CONTROL), &undoManager);
+        juce::ValueTree newManualControl(IDs::MANUAL_CONTROL);
+        newManualControl.setProperty(IDs::CONTROL_NAME, "<control-name>", nullptr);
+        state.appendChild(newManualControl, &undoManager);
     };
     addAndMakeVisible(addOSCControlButton);
     addAndMakeVisible(addManualControlButton);
