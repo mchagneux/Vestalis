@@ -13,7 +13,12 @@ MainComponent::MainComponent() : app(juce::ValueTree(IDs::APP)),
 
     app.appendChild(OSCState, nullptr);
     app.appendChild(juce::ValueTree(IDs::CONTROLS), nullptr);
-    app.appendChild(juce::ValueTree(IDs::VISUAL_PARAMETERS), nullptr);
+
+    auto visualParametersState = juce::ValueTree(IDs::VISUAL_PARAMETERS);
+    auto visualParameter = juce::ValueTree(IDs::VISUAL_PARAMETER);
+    visualParameter.setProperty(IDs::VISUAL_PARAMETER_NAME, "iTime", nullptr);
+    visualParametersState.appendChild(visualParameter, nullptr);
+    app.appendChild(visualParametersState, nullptr);
 
     controlsPane = std::make_unique<ControlsPane>(  app.getChildWithName(IDs::CONTROLS), 
                                                     undoManager, 
@@ -24,7 +29,6 @@ MainComponent::MainComponent() : app(juce::ValueTree(IDs::APP)),
                                             oscReceiver );
 
     visualParametersPane = std::make_unique<VisualParametersPane>(  app.getChildWithName(IDs::VISUAL_PARAMETERS), 
-                                                                    app.getChildWithName(IDs::CONTROLS), 
                                                                     undoManager );
     addAndMakeVisible(*visualParametersPane);
     addAndMakeVisible(*topPane);

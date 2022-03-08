@@ -22,12 +22,12 @@
       <FILE id="zLtA2T" name="ControlsPane.cpp" compile="1" resource="0"
             file="Source/ControlsPane.cpp"/>
       <FILE id="c0aZV0" name="ControlsPane.h" compile="0" resource="0" file="Source/ControlsPane.h"/>
-      <FILE id="mnsCcg" name="VisualParametersPane.cpp" compile="1" resource="0"
-            file="Source/VisualParametersPane.cpp"/>
-      <FILE id="wpmTqk" name="VisualParametersPane.h" compile="0" resource="0"
-            file="Source/VisualParametersPane.h"/>
       <FILE id="HMw5S7" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="y5Q5Ja" name="VisualParameters.h" compile="0" resource="0"
+            file="Source/VisualParameters.h"/>
       <FILE id="C7UuDb" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="A2TjfL" name="VisualParameter.h" compile="0" resource="0"
+            file="Source/VisualParameter.h"/>
       <FILE id="nnCXA6" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
     </GROUP>

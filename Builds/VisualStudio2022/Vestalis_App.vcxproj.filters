@@ -271,9 +271,6 @@
     <ClCompile Include="..\..\Source\ControlsPane.cpp">
       <Filter>Vestalis\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\VisualParametersPane.cpp">
-      <Filter>Vestalis\Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Main.cpp">
       <Filter>Vestalis\Source</Filter>
     </ClCompile>
@@ -1698,10 +1695,13 @@
     <ClInclude Include="..\..\Source\ControlsPane.h">
       <Filter>Vestalis\Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\VisualParametersPane.h">
+    <ClInclude Include="..\..\Source\VisualParameters.h">
       <Filter>Vestalis\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\MainComponent.h">
+      <Filter>Vestalis\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\VisualParameter.h">
       <Filter>Vestalis\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_core\containers\juce_AbstractFifo.h">

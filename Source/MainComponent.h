@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 #include "ControlsPane.h"
-#include "VisualParametersPane.h"
+#include "VisualParameters.h"
 #include "Visualizer.h"
 #include "TopPane.h"
 #include "BottomPane.h"
