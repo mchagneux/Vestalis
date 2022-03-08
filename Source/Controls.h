@@ -30,6 +30,9 @@ struct Control : public juce::Component,
 {
     Control(const juce::ValueTree& v, juce::UndoManager& um): state(v), undoManager(um)
     {
+        state.setProperty(IDs::CONTROL_VALUE, 0.0, nullptr);
+        controlValue.referTo(state, IDs::CONTROL_VALUE, nullptr);
+
         state.addListener(this);
         deleteButton.setButtonText("Delete");
         deleteButton.onClick = [this] 
@@ -97,7 +100,7 @@ struct Control : public juce::Component,
 
 juce::ValueTree state;
 juce::UndoManager& undoManager;
-
+juce::CachedValue<float> controlValue;
 private: 
     juce::Label controlNameLabel;
     juce::TextButton deleteButton;
@@ -173,7 +176,8 @@ struct OSCControl : public Control,
     }
     void oscMessageReceived(const juce::OSCMessage& message) 
     {
-        oscContentLabel.setText(juce::String(message[0].getFloat32()), juce::dontSendNotification);
+        controlValue = message[0].getFloat32();
+        oscContentLabel.setText(juce::String(controlValue), juce::dontSendNotification);
     }
 
     void valueChanged(juce::Value& value)

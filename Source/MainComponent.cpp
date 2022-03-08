@@ -3,8 +3,7 @@
 //==============================================================================
 
 MainComponent::MainComponent() : app(juce::ValueTree(IDs::APP)),
-                                 bottomPane(undoManager)
-                                     
+                                 bottomPane(undoManager)                                     
 {
 
     
@@ -14,10 +13,20 @@ MainComponent::MainComponent() : app(juce::ValueTree(IDs::APP)),
 
     app.appendChild(OSCState, nullptr);
     app.appendChild(juce::ValueTree(IDs::CONTROLS), nullptr);
+    app.appendChild(juce::ValueTree(IDs::VISUAL_PARAMETERS), nullptr);
 
-    controlsPane = std::make_unique<ControlsPane>(app.getChildWithName(IDs::CONTROLS), undoManager, oscReceiver);
-    topPane = std::make_unique<TopPane>(app.getChildWithName(IDs::OSC_RECEIVER), undoManager, oscReceiver);
-    addAndMakeVisible(visualParametersPane);
+    controlsPane = std::make_unique<ControlsPane>(  app.getChildWithName(IDs::CONTROLS), 
+                                                    undoManager, 
+                                                    oscReceiver );
+
+    topPane = std::make_unique<TopPane>(    app.getChildWithName(IDs::OSC_RECEIVER), 
+                                            undoManager, 
+                                            oscReceiver );
+
+    visualParametersPane = std::make_unique<VisualParametersPane>(  app.getChildWithName(IDs::VISUAL_PARAMETERS), 
+                                                                    app.getChildWithName(IDs::CONTROLS), 
+                                                                    undoManager );
+    addAndMakeVisible(*visualParametersPane);
     addAndMakeVisible(*topPane);
     addAndMakeVisible(bottomPane);
     addAndMakeVisible(visualizer);
@@ -52,5 +61,5 @@ void MainComponent::resized()
     auto controlArea = area.removeFromLeft(0.2 * getWidth());
     controlsPane->setBounds(controlArea);
     visualizer.setBounds(area.removeFromLeft(0.6 * getWidth()));
-    visualParametersPane.setBounds(area);
+    visualParametersPane->setBounds(area);
 }

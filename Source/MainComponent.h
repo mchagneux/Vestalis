@@ -31,7 +31,7 @@ private:
     BottomPane bottomPane;
     std::unique_ptr<TopPane> topPane;
     Visualizer visualizer;
-    VisualParametersPane visualParametersPane;
+    std::unique_ptr<VisualParametersPane> visualParametersPane;
 
     juce::OSCReceiver oscReceiver;
     juce::UndoManager undoManager;

@@ -12,7 +12,9 @@
 #include "VisualParametersPane.h"
 
 //==============================================================================
-VisualParametersPane::VisualParametersPane()
+VisualParametersPane::VisualParametersPane(const juce::ValueTree& vPState, const juce::ValueTree& cState, juce::UndoManager& um):                                                                                                   visualParametersState(vPState),
+                                                                                            controlsState(cState),
+                                                                                            undoManager(um)
 {
 
 }
