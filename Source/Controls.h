@@ -38,15 +38,25 @@ struct Control : public juce::Component,
             state.getParent().removeChild(state, &undoManager); 
         };
         controlNameLabel.setEditable(true);
+        controlNameLabel.setJustificationType(juce::Justification::centred);
         controlNameLabel.onTextChange = [this] 
         { 
             undoManager.beginNewTransaction("Change control name");
             state.setProperty(IDs::CONTROL_NAME, controlNameLabel.getText(), &undoManager); 
         };
+        if (!state.hasProperty(IDs::CONTROL_NAME)) { setInitControlName(); }
         controlNameLabel.setText(v.getProperty(IDs::CONTROL_NAME).toString(), juce::dontSendNotification);
         controlNameLabel.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(controlNameLabel);
         addAndMakeVisible(deleteButton);
+    }
+    ~Control() override
+    {
+
+    }
+    void setInitControlName()
+    {
+        state.setProperty(IDs::CONTROL_NAME, "Control " + juce::String(state.getParent().getNumChildren()), nullptr);
     }
 
     void paint(juce::Graphics& g) override
@@ -70,7 +80,7 @@ struct Control : public juce::Component,
         auto componentHeight = getHeight() / 4;
         auto marginY = componentHeight / 4;
         auto marginX = getWidth() / 4;
-        controlNameLabel.setBounds(getLocalBounds().removeFromTop(componentHeight));
+        controlNameLabel.setBounds(getLocalBounds().removeFromTop(componentHeight).reduced(marginX, marginY));
         deleteButton.setBounds(getLocalBounds().removeFromBottom(componentHeight).reduced(marginX, marginY));
     }
 
@@ -102,6 +112,12 @@ struct ManualControl : public Control,
         addAndMakeVisible(slider);
 
     }
+
+    ~ManualControl() override
+    {
+
+    }
+
     void sliderValueChanged(juce::Slider * slider) override
     {
 
@@ -125,6 +141,7 @@ struct OSCControl : public Control,
    
     OSCControl(const juce::ValueTree& v, juce::UndoManager& um, juce::OSCReceiver& or) : Control(v, um), oscReceiver(or)
     {
+        if (!state.hasProperty(IDs::OSC_ADDRESS)) { setInitOSCAddress(); }
         oscAddress.referTo(state.getPropertyAsValue(IDs::OSC_ADDRESS, &undoManager));
         oscAddress.addListener(this);
 
@@ -132,23 +149,36 @@ struct OSCControl : public Control,
 
         oscAddressLabel.setText("OSC address:", juce::dontSendNotification);
         oscAddressLabel.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(oscAddressLabel);
 
-        oscAddressInput.onTextChange = [this] { oscAddress.setValue(oscAddressInput.getText()); };
+
         oscAddressInput.setEditable(true);
         oscAddressInput.setJustificationType(juce::Justification::centred);
         oscAddressInput.setText(oscAddress.getValue(), juce::dontSendNotification);
-
+        oscAddressInput.onTextChange = [this]
+        {
+            undoManager.beginNewTransaction("Change OSC address...");
+            oscAddress = oscAddressInput.getText();
+        };
         addAndMakeVisible(oscAddressInput);
-        addAndMakeVisible(oscAddressLabel);
 
+        oscContentLabel.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(oscContentLabel);
+
+    }
+
+    ~OSCControl() override
+    {
+        oscReceiver.removeListener(this);
     }
     void oscMessageReceived(const juce::OSCMessage& message) 
     {
-        oscAddressLabel.setText(message[0].getString(), juce::dontSendNotification);
+        oscContentLabel.setText(juce::String(message[0].getFloat32()), juce::dontSendNotification);
     }
 
     void valueChanged(juce::Value& value)
     {
+        oscContentLabel.setText("", juce::dontSendNotification);
         oscReceiver.removeListener(this);
         oscReceiver.addListener(this, value.getValue().toString());
     }
@@ -159,16 +189,33 @@ struct OSCControl : public Control,
     {
         Control::resized();
         auto area = getLocalBounds();
-        oscAddressLabel.setBounds(area.removeFromLeft(getWidth() / 2).reduced(0, getHeight() / 4));
-        oscAddressInput.setBounds(area.reduced(0, getHeight() / 4));
+        area.removeFromTop(getHeight() / 4);
+        auto oscAddressPartsArea = area.removeFromTop(getHeight() / 4);
+        oscAddressLabel.setBounds(oscAddressPartsArea.removeFromLeft(getWidth() / 2).reduced(0, oscAddressPartsArea.getHeight() / 4));
+        oscAddressInput.setBounds(oscAddressPartsArea.reduced(oscAddressPartsArea.getWidth() / 8, oscAddressPartsArea.getHeight() /4));
+        auto oscContentArea = area.removeFromTop(getHeight() / 4);
+        oscContentLabel.setBounds(oscContentArea.reduced(oscContentArea.getWidth() / 4, oscContentArea.getHeight() / 4));
+
+
     }
 
+    void setInitOSCAddress()
+    {
+        int numOSCControls = 0;
+        for (auto& control : state.getParent()) {
+            if (control.hasType(IDs::OSC_CONTROL)) numOSCControls++; 
+        }
+        state.setProperty(IDs::OSC_ADDRESS, "/vestalis/address" + juce::String(numOSCControls), nullptr);
+
+    }
 
 private: 
     juce::Value oscAddress;
     juce::Label oscAddressInput;
     juce::Label oscAddressLabel;
-    juce::OSCReceiver& oscReceiver ;
+    juce::OSCReceiver& oscReceiver;
+    juce::Label oscContentLabel;
+
 };
 
 class ControlList : public juce::Component,
@@ -228,7 +275,7 @@ public:
             addAndMakeVisible(control);
             return control;
         }
-        else {
+        else{
             auto* control = new OSCControl(valueTree, undoManager, oscReceiver);
             addAndMakeVisible(control);
             return control;
@@ -252,8 +299,11 @@ public:
     {
         resized();
     };
+
+
 private:
     juce::UndoManager& undoManager;
     juce::OSCReceiver& oscReceiver;
+
 
 };
