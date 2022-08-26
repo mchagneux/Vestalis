@@ -20,7 +20,7 @@ class VisualParameter  : public juce::Component,
                         public juce::ValueTree::Listener
 {
 public:
-    VisualParameter(const juce::ValueTree& v, juce::UndoManager& um): state(v), undoManager(um), controlsState(v.getRoot().getChildWithName(IDs::CONTROLS))
+    VisualParameter(const juce::ValueTree& v, juce::UndoManager& um): state(v), controlsState(v.getRoot().getChildWithName(IDs::CONTROLS)), undoManager(um)
     {
         controlsState.addListener(this);
         parameterNameLabel.setText(v.getProperty(IDs::VISUAL_PARAMETER_NAME), juce::dontSendNotification);
