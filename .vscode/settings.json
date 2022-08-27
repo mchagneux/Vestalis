@@ -4,6 +4,12 @@
         "bitset": "cpp",
         "memory": "cpp",
         "random": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "istream": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp"
     }
 }

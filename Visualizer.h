@@ -730,9 +730,10 @@ struct OpenGLUtils
     };
 };
 
-
 class Visualizer  : public juce::Component,
-                    public juce::OpenGLRenderer
+                    public juce::OpenGLRenderer,
+                    public juce::AsyncUpdater
+
 {
 public:
     Visualizer();
@@ -745,6 +746,7 @@ public:
         const ScopedLock lock (mutex);
         bounds = getLocalBounds();
         draggableOrientation.setViewport (bounds);
+        statusLabel.setBounds(bounds.removeFromTop(bounds.getHeight() / 8));
     }
 
     void newOpenGLContextCreated() override
@@ -753,18 +755,29 @@ public:
         // on demand, during the render callback.
         freeAllContextObjects();
 
+        auto preset = OpenGLUtils::getPresets()[0];
+        setShaderProgram(preset.vertexShader, preset.fragmentShader);
     }
-
+    
+    void handleAsyncUpdate() override
+    {
+        const ScopedLock lock (shaderMutex); // Prevent concurrent access to shader strings and status
+        statusLabel.setText (statusText, dontSendNotification);
+    }
 
     void freeAllContextObjects()
     {
+        shape     .reset();
         shader    .reset();
         attributes.reset();
         uniforms  .reset();
+        texture   .release();
     }
 
-    void renderOpenGL() override{
-
+    // This is a virtual method in OpenGLRenderer, and is called when it's time
+    // to do your GL rendering.
+    void renderOpenGL() override
+    {
         using namespace ::juce::gl;
 
         const ScopedLock lock (mutex);
@@ -773,8 +786,16 @@ public:
 
         auto desktopScale = (float) openGLContext.getRenderingScale();
 
-        // OpenGLHelpers::clear (getUIColourIfAvailable (LookAndFeel_V4::ColourScheme::UIColour::windowBackground,
-        //                                               Colours::lightblue));
+        OpenGLHelpers::clear (getUIColourIfAvailable (LookAndFeel_V4::ColourScheme::UIColour::windowBackground,
+                                                      Colours::lightblue));
+
+        if (textureToUse != nullptr)
+            if (! textureToUse->applyTo (texture))
+                textureToUse = nullptr;
+
+        // // First draw our background graphics to demonstrate the OpenGLGraphicsContext class
+        // if (doBackgroundDrawing)
+        //     drawBackground2DStuff (desktopScale);
 
         updateShader();   // Check whether we need to compile a new shader
 
@@ -794,6 +815,8 @@ public:
                     roundToInt (desktopScale * (float) bounds.getWidth()),
                     roundToInt (desktopScale * (float) bounds.getHeight()));
 
+        texture.bind();
+
         glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -811,13 +834,25 @@ public:
         if (uniforms->lightPosition.get() != nullptr)
             uniforms->lightPosition->set (-15.0f, 10.0f, 15.0f, 0.0f);
 
+        if (uniforms->bouncingNumber.get() != nullptr)
+            uniforms->bouncingNumber->set (bouncingNumber.getValue());
+
+        shape->draw (*attributes);
+
         // Reset the element buffers so child Components draw correctly
         glBindBuffer (GL_ARRAY_BUFFER, 0);
         glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
 
     }
-    void openGLContextClosing() override {
+    
+    void openGLContextClosing() override
+    {
+        // When the context is about to close, you must use this callback to delete
+        // any GPU resources while the context is still current.
+        freeAllContextObjects();
 
+        if (lastTexture != nullptr)
+            setTexture (lastTexture);
     }
 
     Matrix3D<float> getProjectionMatrix() const
@@ -840,6 +875,13 @@ public:
         return viewMatrix * rotationMatrix;
     }
 
+
+    void setTexture (OpenGLUtils::DemoTexture* t)
+    {
+        lastTexture = textureToUse = t;
+    }
+
+
     void setShaderProgram (const String& vertexShader, const String& fragmentShader)
     {
         const ScopedLock lock (shaderMutex); // Prevent concurrent access to shader strings and status
@@ -850,7 +892,7 @@ public:
     Rectangle<int> bounds;
     Draggable3DOrientation draggableOrientation;
     float scale = 0.5f, rotationSpeed = 0.0f;
-
+    BouncingNumber bouncingNumber;
     CriticalSection mutex;
 
 private:
@@ -859,13 +901,18 @@ private:
     float rotation = 0.0f;
 
     std::unique_ptr<OpenGLShaderProgram> shader;
+    std::unique_ptr<OpenGLUtils::Shape> shape;
     std::unique_ptr<OpenGLUtils::Attributes> attributes;
     std::unique_ptr<OpenGLUtils::Uniforms> uniforms;
 
+    OpenGLTexture texture;
+    OpenGLUtils::DemoTexture* textureToUse = nullptr;
+    OpenGLUtils::DemoTexture* lastTexture  = nullptr;
 
 
     CriticalSection shaderMutex;
     String newVertexShader, newFragmentShader, statusText;
+    Label statusLabel;
 
 
     void updateShader()
@@ -880,12 +927,14 @@ private:
                   && newShader->addFragmentShader (OpenGLHelpers::translateFragmentShaderToV3 (newFragmentShader))
                   && newShader->link())
             {
+                shape     .reset();
                 attributes.reset();
                 uniforms  .reset();
 
                 shader.reset (newShader.release());
                 shader->use();
 
+                shape     .reset (new OpenGLUtils::Shape      ());
                 attributes.reset (new OpenGLUtils::Attributes (*shader));
                 uniforms  .reset (new OpenGLUtils::Uniforms   (*shader));
 
@@ -896,6 +945,7 @@ private:
                 statusText = newShader->getLastError();
             }
 
+            triggerAsyncUpdate();
 
             newVertexShader   = {};
             newFragmentShader = {};
