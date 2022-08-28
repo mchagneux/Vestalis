@@ -22,8 +22,8 @@ Visualizer::Visualizer()
   openGLContext.setRenderer (this);
   openGLContext.attachTo (*this);
   openGLContext.setContinuousRepainting (true);
-  statusLabel.setText("Init text.", dontSendNotification);
-  addAndMakeVisible(statusLabel);
+  // statusLabel.setText("Init text.", dontSendNotification);
+  // addAndMakeVisible(statusLabel);
 }
 
 Visualizer::~Visualizer()

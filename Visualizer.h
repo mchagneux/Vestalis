@@ -731,8 +731,8 @@ struct OpenGLUtils
 };
 
 class Visualizer  : public juce::Component,
-                    public juce::OpenGLRenderer,
-                    public juce::AsyncUpdater
+                    public juce::OpenGLRenderer
+                    // public juce::AsyncUpdater
 
 {
 public:
@@ -746,7 +746,7 @@ public:
         const ScopedLock lock (mutex);
         bounds = getLocalBounds();
         draggableOrientation.setViewport (bounds);
-        statusLabel.setBounds(bounds.removeFromTop(bounds.getHeight() / 8));
+        // statusLabel.setBounds(bounds.removeFromTop(bounds.getHeight() / 8));
     }
 
     void newOpenGLContextCreated() override
@@ -755,7 +755,7 @@ public:
         // on demand, during the render callback.
         freeAllContextObjects();
 
-        const auto & preset = OpenGLUtils::getPresets()[0];
+        const auto & preset = OpenGLUtils::getPresets()[3];
         setShaderProgram(preset.vertexShader, preset.fragmentShader);
     }
     
@@ -885,14 +885,14 @@ public:
 
     Rectangle<int> bounds;
     Draggable3DOrientation draggableOrientation;
-    float scale = 0.5f, rotationSpeed = 0.0f;
+    float scale = 0.5f, rotationSpeed = 20.0f;
     BouncingNumber bouncingNumber;
     CriticalSection mutex;
 
 private:
     OpenGLContext openGLContext;
 
-    float rotation = 0.0f;
+    float rotation = 1.0f;
 
     std::unique_ptr<OpenGLShaderProgram> shader;
     std::unique_ptr<OpenGLUtils::Shape> shape;
@@ -906,13 +906,12 @@ private:
 
     CriticalSection shaderMutex;
     String newVertexShader, newFragmentShader, statusText;
-    Label statusLabel;
     
-    void handleAsyncUpdate() override
-    {
-        const ScopedLock lock (shaderMutex); // Prevent concurrent access to shader strings and status
-        statusLabel.setText (statusText, dontSendNotification);
-    }
+    // void handleAsyncUpdate() override
+    // {
+    //     const ScopedLock lock (shaderMutex); // Prevent concurrent access to shader strings and status
+    //     statusLabel.setText (statusText, dontSendNotification);
+    // }
 
     void updateShader()
     {
@@ -937,14 +936,14 @@ private:
                 attributes.reset (new OpenGLUtils::Attributes (*shader));
                 uniforms  .reset (new OpenGLUtils::Uniforms   (*shader));
 
-                statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
+                // statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
             }
-            else
-            {
-                statusText = newShader->getLastError();
-            }
+            // else
+            // {
+            //     statusText = newShader->getLastError();
+            // }
 
-            triggerAsyncUpdate();
+            // triggerAsyncUpdate();
 
             newVertexShader   = {};
             newFragmentShader = {};
