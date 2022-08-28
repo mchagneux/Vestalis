@@ -755,16 +755,10 @@ public:
         // on demand, during the render callback.
         freeAllContextObjects();
 
-        auto preset = OpenGLUtils::getPresets()[0];
+        const auto & preset = OpenGLUtils::getPresets()[0];
         setShaderProgram(preset.vertexShader, preset.fragmentShader);
     }
     
-    void handleAsyncUpdate() override
-    {
-        const ScopedLock lock (shaderMutex); // Prevent concurrent access to shader strings and status
-        statusLabel.setText (statusText, dontSendNotification);
-    }
-
     void freeAllContextObjects()
     {
         shape     .reset();
@@ -913,7 +907,12 @@ private:
     CriticalSection shaderMutex;
     String newVertexShader, newFragmentShader, statusText;
     Label statusLabel;
-
+    
+    void handleAsyncUpdate() override
+    {
+        const ScopedLock lock (shaderMutex); // Prevent concurrent access to shader strings and status
+        statusLabel.setText (statusText, dontSendNotification);
+    }
 
     void updateShader()
     {
