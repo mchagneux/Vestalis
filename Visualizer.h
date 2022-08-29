@@ -837,6 +837,9 @@ public:
         glBindBuffer (GL_ARRAY_BUFFER, 0);
         glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
 
+        rotation += (float) rotationSpeed;
+
+
     }
     
     void openGLContextClosing() override
@@ -885,14 +888,14 @@ public:
 
     Rectangle<int> bounds;
     Draggable3DOrientation draggableOrientation;
-    float scale = 0.5f, rotationSpeed = 20.0f;
+    float scale = 0.5f, rotationSpeed = 0.05f;
     BouncingNumber bouncingNumber;
     CriticalSection mutex;
 
 private:
     OpenGLContext openGLContext;
 
-    float rotation = 1.0f;
+    float rotation = 0.0f;
 
     std::unique_ptr<OpenGLShaderProgram> shader;
     std::unique_ptr<OpenGLUtils::Shape> shape;
