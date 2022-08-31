@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "Identifiers.h"
 #include "OSCManager.h" 
+#include "ShaderControls.h"
 //==============================================================================
 /*
 */

@@ -35,6 +35,28 @@ TopPane::TopPane(const juce::ValueTree& v, juce::UndoManager& um, juce::OSCRecei
 
     };
     manageShaderButton.setButtonText("Manage shader");
+    manageShaderButton.onClick = [this]
+    { 
+      auto * shaderControlsWindow  = new ShaderControlsWindow(oscState, 
+                                  juce::Desktop::getInstance().getDefaultLookAndFeel()
+                                                                  .findColour (juce::ResizableWindow::backgroundColourId),
+                                  DocumentWindow::allButtons);
+
+        Rectangle<int> area (0, 0, 300, 400);
+        auto native = false; 
+        RectanglePlacement placement ((native ? RectanglePlacement::xLeft
+                                              : RectanglePlacement::xRight)
+                                       | RectanglePlacement::yTop
+                                       | RectanglePlacement::doNotResize);
+
+        auto result = placement.appliedTo (area, Desktop::getInstance().getDisplays()
+                                                         .getPrimaryDisplay()->userArea.reduced (20));
+        shaderControlsWindow->setBounds (result);
+
+        shaderControlsWindow->setResizable (true, ! native);
+        shaderControlsWindow->setUsingNativeTitleBar (native);
+        shaderControlsWindow->setVisible (true);
+    };
     addAndMakeVisible(appTitleLabel);
     addAndMakeVisible(manageShaderButton);
     addAndMakeVisible(manageOSCButton);
