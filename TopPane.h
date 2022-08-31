@@ -49,6 +49,7 @@ private:
     juce::TextButton manageOSCButton;
     juce::Label oscConnectionStateLabel;
     juce::Label appTitleLabel;
+    Component::SafePointer<ShaderControlsWindow> shaderControlsWindow;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TopPane)
 };
