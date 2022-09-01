@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "WavefrontObjParser.h"
+#include "Identifiers.h"
 //==============================================================================
 /*
 */
@@ -468,14 +469,18 @@ struct OpenGLUtils
 };
 
 class Visualizer  : public juce::Component,
-                    public juce::OpenGLRenderer
+                    public juce::OpenGLRenderer,
+                    public juce::ValueTree::Listener
                     // public juce::AsyncUpdater
 
 {
 public:
-    Visualizer();
+    Visualizer(const juce::ValueTree & shState);
     ~Visualizer() override;
-
+    void valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property){
+        setShaderProgram(shaderState.getProperty(IDs::VERTEX_SHADER), 
+                        shaderState.getProperty(IDs::FRAGMENT_SHADER));
+    }
     void paint (Graphics&) override {}
 
     void resized() override
@@ -491,9 +496,8 @@ public:
         // nothing to do in this case - we'll initialise our shaders + textures
         // on demand, during the render callback.
         freeAllContextObjects();
-
-        const auto & preset = OpenGLUtils::getPresets()[1];
-        setShaderProgram(preset.vertexShader, preset.fragmentShader);
+        setShaderProgram(shaderState.getProperty(IDs::VERTEX_SHADER), 
+                        shaderState.getProperty(IDs::FRAGMENT_SHADER));
     }
     
     void freeAllContextObjects()
@@ -642,7 +646,7 @@ private:
     OpenGLTexture texture;
     OpenGLUtils::DemoTexture* textureToUse = nullptr;
     OpenGLUtils::DemoTexture* lastTexture  = nullptr;
-
+    juce::ValueTree shaderState;
 
     CriticalSection shaderMutex;
     String newVertexShader, newFragmentShader, statusText;

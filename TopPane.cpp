@@ -12,7 +12,8 @@
 #include "TopPane.h"
 
 //==============================================================================
-TopPane::TopPane(const juce::ValueTree& v, juce::UndoManager& um, juce::OSCReceiver& oR): oscState(v), 
+TopPane::TopPane(const juce::ValueTree& v, juce::UndoManager& um, juce::OSCReceiver& oR): oscState(v.getChildWithName(IDs::OSC_RECEIVER)), 
+                                                                                        shaderState(v.getChildWithName(IDs::SHADERS)),
                                                                                         undoManager(um),
                                                                                         oscReceiver(oR)
 
@@ -39,7 +40,7 @@ TopPane::TopPane(const juce::ValueTree& v, juce::UndoManager& um, juce::OSCRecei
     { 
         if (shaderControlsWindow == nullptr){
 
-            shaderControlsWindow = new ShaderControlsWindow(oscState, 
+            shaderControlsWindow = new ShaderControlsWindow(shaderState, undoManager,
                                     juce::Desktop::getInstance().getDefaultLookAndFeel()
                                                                     .findColour (juce::ResizableWindow::backgroundColourId),
                                     DocumentWindow::allButtons);

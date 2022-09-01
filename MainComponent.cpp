@@ -20,20 +20,32 @@ MainComponent::MainComponent() : app(juce::ValueTree(IDs::APP)),
     visualParametersState.appendChild(visualParameter, nullptr);
     app.appendChild(visualParametersState, nullptr);
 
+
+    auto shaderState = juce::ValueTree(IDs::SHADERS);
+    auto default_shader = OpenGLUtils::getPresets()[0];
+    shaderState.setProperty(IDs::VERTEX_SHADER, default_shader.vertexShader, nullptr);
+    shaderState.setProperty(IDs::FRAGMENT_SHADER, default_shader.fragmentShader, nullptr);
+
+
+    app.appendChild(shaderState, nullptr);
+
     controlsPane = std::make_unique<ControlsPane>(  app.getChildWithName(IDs::CONTROLS), 
                                                     undoManager, 
                                                     oscReceiver );
 
-    topPane = std::make_unique<TopPane>(    app.getChildWithName(IDs::OSC_RECEIVER), 
+    
+    topPane = std::make_unique<TopPane>(    app, 
                                             undoManager, 
                                             oscReceiver );
+
+    visualizer = std::make_unique<Visualizer>(app.getChildWithName(IDs::SHADERS));
 
     visualParametersPane = std::make_unique<VisualParametersPane>(  app.getChildWithName(IDs::VISUAL_PARAMETERS), 
                                                                     undoManager );
     addAndMakeVisible(*visualParametersPane);
     addAndMakeVisible(*topPane);
     addAndMakeVisible(bottomPane);
-    addAndMakeVisible(visualizer);
+    addAndMakeVisible(*visualizer);
     addAndMakeVisible(*controlsPane);
     setSize(600, 400);
 
@@ -64,6 +76,6 @@ void MainComponent::resized()
     bottomPane.setBounds(area.removeFromBottom(0.05 * getHeight()));
     auto controlArea = area.removeFromLeft(0.2 * getWidth());
     controlsPane->setBounds(controlArea);
-    visualizer.setBounds(area.removeFromLeft(0.6 * getWidth()));
+    visualizer->setBounds(area.removeFromLeft(0.6 * getWidth()));
     visualParametersPane->setBounds(area);
 }

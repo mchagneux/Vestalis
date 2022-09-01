@@ -30,7 +30,7 @@ private:
     std::unique_ptr<ControlsPane> controlsPane;
     BottomPane bottomPane;
     std::unique_ptr<TopPane> topPane;
-    Visualizer visualizer;
+    std::unique_ptr<Visualizer> visualizer;
     std::unique_ptr<VisualParametersPane> visualParametersPane;
 
     juce::OSCReceiver oscReceiver;

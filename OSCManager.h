@@ -66,7 +66,7 @@ public:
         if (oscConnectionState.getValue()) { return "Disconnect";}
         else { return "Connect"; }
     }
-    void valueChanged(juce::Value& value) {
+    void valueChanged(juce::Value& value) override{
         oscConnectDisconnectButton.setButtonText(getConnectDisconnectText());
     }
 

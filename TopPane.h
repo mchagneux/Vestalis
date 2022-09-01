@@ -43,6 +43,7 @@ public:
 private:
     juce::OSCReceiver& oscReceiver;
     juce::ValueTree oscState;
+    juce::ValueTree shaderState;
     juce::Value oscConnectionState;
     juce::UndoManager& undoManager;
     juce::TextButton manageShaderButton;

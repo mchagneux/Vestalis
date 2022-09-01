@@ -12,14 +12,15 @@
 #include "Visualizer.h"
 
 //==============================================================================
-Visualizer::Visualizer()
+Visualizer::Visualizer(const juce::ValueTree& shState): shaderState(shState)
 {
-
+  shaderState.addListener(this);
   if (auto* peer = getPeer())
-      peer->setCurrentRenderingEngine (0);
+      peer->setCurrentRenderingEngine (1);
 
   setOpaque (true);
   openGLContext.setRenderer (this);
+  openGLContext.setComponentPaintingEnabled(false);
   openGLContext.attachTo (*this);
   openGLContext.setContinuousRepainting (true);
   // statusLabel.setText("Init text.", dontSendNotification);
