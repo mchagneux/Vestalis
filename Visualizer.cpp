@@ -15,8 +15,8 @@
 Visualizer::Visualizer(const juce::ValueTree& shState): shaderState(shState)
 {
   shaderState.addListener(this);
-  // if (auto * peer = getPeer())
-  //     peer->setCurrentRenderingEngine (0);
+  if (auto * peer = getPeer())
+      peer->setCurrentRenderingEngine (1);
 
   setOpaque (true);
   openGLContext.setRenderer (this);
