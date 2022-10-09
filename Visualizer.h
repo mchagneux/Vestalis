@@ -644,8 +644,8 @@ private:
     std::unique_ptr<OpenGLUtils::Uniforms> uniforms;
 
     OpenGLTexture texture;
-    OpenGLUtils::DemoTexture* textureToUse = nullptr;
-    OpenGLUtils::DemoTexture* lastTexture  = nullptr;
+    OpenGLUtils::DemoTexture * textureToUse = nullptr;
+    OpenGLUtils::DemoTexture * lastTexture  = nullptr;
     juce::ValueTree shaderState;
 
     CriticalSection shaderMutex;

@@ -2,17 +2,70 @@
 #include "Identifiers.h"
 
 
+
+class GeometryControls : public Component
+{
+    public: 
+        GeometryControls(const ValueTree& gState, UndoManager & uM): geometryState(gState), undoManager(uM)
+        {
+            addAndMakeVisible(plainGeometryToggle);
+            addAndMakeVisible(loadButton);
+            plainGeometryToggle.setButtonText("Plain");
+            plainGeometryToggle.setRadioGroupId(0);
+            loadButton.setRadioGroupId(0);
+            loadButton.setButtonText("Load");
+
+            plainGeometryToggle.onClick = [this]
+            {
+                geometryState.setProperty(IDs::PLAIN_GEOMETRY, plainGeometryToggle.getToggleState(), &undoManager);
+            };
+
+            loadButton.onClick = [this]
+            {
+
+            };
+
+        }
+
+        void resized() override
+        {
+            auto bounds = getLocalBounds();
+            auto toggleButtonArea = bounds.removeFromLeft(int(getWidth() / 2));
+            plainGeometryToggle.setBounds(toggleButtonArea.reduced(toggleButtonArea.getWidth() / 4, 0));
+            loadButton.setBounds(bounds.reduced(bounds.getWidth() / 8, bounds.getHeight() / 4));
+            
+        }
+
+        ~GeometryControls() override
+        {
+
+        }
+    private: 
+        ValueTree geometryState; 
+        UndoManager & undoManager;
+        ToggleButton plainGeometryToggle;
+        TextButton loadButton;
+
+
+        
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GeometryControls);
+
+
+};
+
 class ShaderControls : public Component, 
-                        private CodeDocument::Listener                        
+                    private CodeDocument::Listener                        
 {
     public:
-        ShaderControls(const ValueTree & shState, UndoManager& uM): shaderState(shState), undoManager(uM)
+        ShaderControls(const ValueTree & shState, UndoManager& uM): shaderState(shState), undoManager(uM), geometryControls(shState, uM)
         {
+
             addAndMakeVisible (tabbedShaderEditorComp);
             tabbedShaderEditorComp.setTabBarDepth (25);
             tabbedShaderEditorComp.setColour (TabbedButtonBar::tabTextColourId, Colours::grey);
             tabbedShaderEditorComp.addTab ("Vertex", Colours::transparentBlack, &vertexShaderEditor, false);
             tabbedShaderEditorComp.addTab ("Fragment", Colours::transparentBlack, &fragmentShaderEditor, false);
+            tabbedShaderEditorComp.addTab("Geometry", Colours::transparentBlack, &geometryControls, false);
 
 
             vertexShaderDoc.replaceAllContent(shaderState.getProperty(IDs::VERTEX_SHADER));
@@ -23,6 +76,7 @@ class ShaderControls : public Component,
             compileButton.setButtonText("Compile");
             compileButton.onClick = [this]
             {
+                undoManager.beginNewTransaction();
                 shaderState.setProperty(IDs::VERTEX_SHADER, 
                                         vertexShaderDoc.getAllContent(),
                                         &undoManager);
@@ -59,15 +113,16 @@ class ShaderControls : public Component,
 
         void codeDocumentTextInserted (const String& /*newText*/, int /*insertIndex*/) override
         {
-
+            
         }
 
         void codeDocumentTextDeleted (int /*startIndex*/, int /*endIndex*/) override
         {
-
+            
         }
 
         void resized() override{
+            
             auto bounds = getLocalBounds(); 
             auto compileButtonBounds = bounds.removeFromBottom(int(getHeight() / 8));
             tabbedShaderEditorComp.setBounds(bounds);
@@ -85,6 +140,8 @@ class ShaderControls : public Component,
 
         TabbedComponent tabbedShaderEditorComp {TabbedButtonBar::TabsAtTop};
         TextButton compileButton;
+        GeometryControls geometryControls;
+
         
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ShaderControls)
 };
